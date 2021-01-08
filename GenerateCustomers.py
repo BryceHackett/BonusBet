@@ -6,7 +6,8 @@ from sklearn.linear_model import LinearRegression
 from scipy.spatial.distance import jensenshannon
 # import Path to read the csv file in an OS independent way
 from pathlib import Path
-
+# Use pickle to save temporary results
+import pickle
 
 # Create a customer class to
 class Customer(object):
@@ -14,19 +15,19 @@ class Customer(object):
     class to create a customer to generate synthetic betting behaviour
     Parameters
     ----------
-    customer_id : int
+    customer_id: int
     user defined numeric customer id
 
-    bonusbet_sizemultier : float -> defult=1.2
+    bonusbet_sizemultiplier: float -> defult=1.2
     size multiplier for the change in betting history after a bonus bet
 
-    bonusbet_freqmultiplier : float -> defult=1.2
+    bonusbet_freqmultiplier: float -> defult=1.2
     frequency multiplier for the change in betting history after a bonus bet
 
-    random_bonusbet : bool -> defult=False
+    random_bonusbet: bool -> defult=False
     Random bonus bet for each customer if True
 
-    gamma_param : tuple dim 2 -> (5,150)
+    gamma_param: tuple dim 2 -> (5,150)
     Paramters for the gamma distribution to control the betting
 
     Returns
@@ -106,10 +107,13 @@ def kl_divergence(p, q):
 if __name__ == "__main__":
     # Generate 10,000 customers with the same bonus bet applied
     customers = {i: Customer(i) for i in range(1, 10001)}
+    with open(Path().joinpath("Output", "customers10k.pkl"), 'wb') as pkl:
+        pickle.dump(customers, pkl)
+
     # Create a dataframe to store all the customers
     total_customer_betting_df = pd.DataFrame(columns=customers[1].betting_history.columns)
     for key, item in customers.items():
-        total_customer_betting_df = pd.concat([total_customer_betting_df, item.betting_history])
+         total_customer_betting_df = pd.concat([total_customer_betting_df, item.betting_history])
 
     # Group by the date to check the time-series of the total bets placed
     total_yearly_series = total_customer_betting_df[["Bet Date", "Bet Amount"]].groupby(["Bet Date"]).sum()
@@ -119,9 +123,18 @@ if __name__ == "__main__":
     plt.text(customers[1].random_bonusbet_date, float(total_yearly_series.min()), 'Bonus Bet Date')
     plt.text(pd.to_datetime('2020-11-01'), float(total_yearly_series.max()), 'Melbourne Cup')
     plt.savefig("Total Betting Distribution.png", bbox_inches="tight")
+
+
+
     # Look at the mean amount as a function of betting frequency
     # TODO: add this as a class method in the Customer class create a method for now
     def fit_linear_model(customers, remove_melbourne_cup=False):
+        """
+
+        :param customers:
+        :param remove_melbourne_cup:
+        :return:
+        """
         amount = []
         freq = []
         for key, item in customers.items():
@@ -134,12 +147,12 @@ if __name__ == "__main__":
             amount.append(df.loc[
                 df['Bet Date'] >= item.random_bonusbet_date, "Bet Amount"].mean())
             try:
-                freq.append(7 * df.loc[df['Bet Date'] < item.random_bonusbet_date, "Bet Date"].count() / \
+                freq.append(df.loc[df['Bet Date'] < item.random_bonusbet_date, "Bet Date"].count() / \
                             df.loc[df['Bet Date'] < item.random_bonusbet_date, "Bet Date"].nunique())
             except:
                 freq.append(np.NaN)
             try:
-                freq.append(7 * df.loc[df['Bet Date'] >= item.random_bonusbet_date, "Bet Date"].count() / \
+                freq.append(df.loc[df['Bet Date'] >= item.random_bonusbet_date, "Bet Date"].count() / \
                             df.loc[df['Bet Date'] >= item.random_bonusbet_date, "Bet Date"].nunique())
             except:
                 freq.append(np.NaN)
@@ -160,9 +173,9 @@ if __name__ == "__main__":
                  )
 
         amount_distribution_before = calculate_distribution("Mean Amount", "Before Bonus Bet")
-        amount_distribution_after = calculate_distribution("Mean Amount", "Before Bonus Bet")
-        freq_distribution_before = calculate_distribution("Mean Amount", "Before Bonus Bet")
-        freq_distribution_after = calculate_distribution("Mean Amount", "Before Bonus Bet")
+        amount_distribution_after = calculate_distribution("Mean Amount", "After Bonus Bet")
+        freq_distribution_before = calculate_distribution("Weekly Frequency", "Before Bonus Bet")
+        freq_distribution_after = calculate_distribution("Weekly Frequency", "After Bonus Bet")
 
         return (jensenshannon(amount_distribution_before,amount_distribution_after),
                 jensenshannon(freq_distribution_before,freq_distribution_after))
@@ -189,4 +202,7 @@ if __name__ == "__main__":
                                      ) for i in range(1, 1001)}
             results.append(fit_linear_model(customers, True))
 
-    int(linear_summary_df["Mean Amount"].min())
+    with open(Path().joinpath("Output", "results.pkl"), 'wb') as pkl:
+        pickle.dump(results,pkl)
+
+
