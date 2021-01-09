@@ -11,5 +11,14 @@ To generate semi-realistic synthetic data, some key assumptions were made. The f
 
 The default parameters chosen were <img src="https://render.githubusercontent.com/render/math?math=k=5, \theta=150"> which is the blue line in the figure above. The Customer class in the `GenerateCustomers.py` draws from the Gamma distribution to determine the total yearly spend first before generating a betting history. 
 
-## Bet Distribution
-The frequency distribution of bets placed over time is not a uniform distribution due to large sporting events like the AFL and NRL grand finals, and the spring racing carnival. To get a simplified 
+## Bet Frequency Distribution
+The frequency distribution of bets placed over time is not a uniform distribution due to large sporting events like the AFL and NRL grand finals, State of Origin, and the spring racing carnival. To get a simplified approximation of this distribution [`Google Trends`](https://trends.google.com/trends/?geo=AU) can be used, which returns the region specific interest in search terms or topics. The weekly distribution for 2020 for the search term 'betting' is shown below
+
+![Google Trends for Betting](/Plots/Google%20Trends.png)
+
+with the large peak in the distribution due to the Melbourne Cup. This approximate distribution was used to generate the betting frequency for every customer. In reality, each customers betting distribution will be highly dependent on their sport preferences.
+
+## Individual Bets
+
+
+
