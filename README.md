@@ -92,11 +92,11 @@ for bonus_bet_size_multiplier in np.linspace(1, 1.5, linspace_size):
 
 The result of this gives the change in Jensen-Shannon divergence as a function of how much we change the bet size and bet frequency multipliers. Shown below is the Jensen-Shannon divergence for distributions of the mean bet size before and after a bonus bet
 
-![mean bet JS](/Plots/Amonut_JS.png)
+![mean bet JS](/Plots/Amount_JS.png)
 
 It clearly shows that as the bet size multiplier is increased, the Jensen-Shannon divergence increases. Changing the frequency distribution has no change on the Jensen-Shannon divergence, as expected. Plotting the Jensen-Shannon divergence for distributions of the bet frequency before and after a bonus bet gives a similar result
 
-![mean bet JS](/Plots/Freq_JS.png)
+![mean bet JS](/Plots/Frequency_JS.png)
 
 Interestingly, there is a difference in the scale between the mean bet size and frequency plots, suggesting it would be easier to detect changes in the bet size after a bonus bet. 
 
@@ -106,5 +106,6 @@ While the Jensen-Shannon approach gives some ok results for distributions when w
 # Further Extensions
 Some interesting further extensions to this program to better simulate reality would be:
 * Add multiple bonus bets over a period of time 
-* Add an response time to the bonus bet so that it only is effective for a period of time
-* 
+* Add a response time to the bonus bet so that it only is effective for a period of time
+* Change the bet size multiplier to a distribution instead of a constant
+* Add proper Bayesian inference to the distributions
