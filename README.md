@@ -59,11 +59,52 @@ which returns a much more realistic frequency distribution and one that is hard 
 
 # Detecting Changes in Distributions
 
-To measure a change between two distributions the [`Jensen-Shannon Divergence`](https://en.wikipedia.org/wiki/Jensen%E2%80%93Shannon_divergence) can be used. The `calculate_jensenshannon` method in the `GenerateCustomers.py` program takes a dictonary of customers as an input and then returns the Jensen-Shannon Divergence of the distributions before and after a bonus bet for both the mean bet size and weekly bet frequency.
+To measure a change between two distributions the [`Jensen-Shannon Divergence`](https://en.wikipedia.org/wiki/Jensen%E2%80%93Shannon_divergence) can be used as it is a method of measuring the similarity between two probability distributions. It has a bound between 0 and 1, with 0 identical distributions and 1 non-overlapping distributions. The `calculate_jensenshannon` method in the `GenerateCustomers.py` program takes a dictonary of customers as an input and then returns the Jensen-Shannon Divergence of the distributions before and after a bonus bet for both the mean bet size and weekly bet frequency.
 
 The mean bet size is calculated before and after the bonus bet and the distribution is over the total number of customers in the dictonary. It is important to use the mean bet size instead of the total as time scale can be different either side of the bonus bet. For example, if the bonus bet is in March, there will be a difference in the total amount before and after the bonus bet just because there is a longer time period after the March bonus bet date. 
 
+## Applying the Jensen-Shannon Divergence 
+The Jensen-Shannon Divergence can be used to measure the difference in two distributions, to test it is sensitive enough to detect a change we can set up a loop to tweak how much we change the bet amount and bet frequency distributions
 
+```python
+freq_js = []
+amount_js = []
+counter = 1
+linspace_size = 11
+# loop over a size and frequency multiplier
+for bonus_bet_size_multiplier in np.linspace(1, 1.5, linspace_size):
+    for bonus_bet_freq_multiplier in np.linspace(1, 1.5, linspace_size):
+        # quick set up of a loop counter
+        print("Loop {} of {}".format(counter, linspace_size**2))
+        counter += 1
+        # create 1,000 customers with random bonus bet dates with different size and frequency multipliers
+        customers = {i: Customer(i,
+                                 bonusbet_sizemultiplier=bonus_bet_size_multiplier,
+                                 bonusbet_freqmultiplier=bonus_bet_freq_multiplier,
+                                 random_bonusbet=True
+                                 ) for i in range(1, 1001)}
+        # return the Jensen-Shannon divergence
+        result = calculate_jensenshannon(customers, True)
+        # save the results to a list
+        amount_js.append(result[0])
+        freq_js.append(result[1])
+```
+
+The result of this gives the change in Jensen-Shannon divergence as a function of how much we change the bet size and bet frequency multipliers. Shown below is the Jensen-Shannon divergence for distributions of the mean bet size before and after a bonus bet
+
+![mean bet JS](/Plots/Amonut_JS.png)
+
+It clearly shows that as the bet size multiplier is increased, the Jensen-Shannon divergence increases. Changing the frequency distribution has no change on the Jensen-Shannon divergence, as expected. Plotting the Jensen-Shannon divergence for distributions of the bet frequency before and after a bonus bet gives a similar result
+
+![mean bet JS](/Plots/Freq_JS.png)
+
+Interestingly, there is a difference in the scale between the mean bet size and frequency plots, suggesting it would be easier to detect changes in the bet size after a bonus bet. 
+
+## Problems with the Jensen-Shannon Approach
+While the Jensen-Shannon approach gives some ok results for distributions when we explicitly add a change in the underlying distributions, in practice it may not be useful to use as there are some underlying problems. Firstly, the Jensen-Shannon Divergence gives no indication to the direction of the change in distribution, thus if the bonus bet drove away customers, a change would be detected but no extra infromation would be available. Secondly, to apply the Jensen-Shannon Divergence to two distributions and make sense of the output, you need have some knowledge of what to expect if there was no change in the underlying distributions. 
 
 # Further Extensions
-
+Some interesting further extensions to this program to better simulate reality would be:
+* Add multiple bonus bets over a period of time 
+* Add an response time to the bonus bet so that it only is effective for a period of time
+* 
